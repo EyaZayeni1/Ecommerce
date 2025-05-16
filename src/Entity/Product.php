@@ -46,6 +46,8 @@ class Product
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'product')]
     private Collection $orderItems;
 
+
+
     public function __construct()
     {
         $this->cartItems = new ArrayCollection();
@@ -188,4 +190,10 @@ class Product
 
         return $this;
     }
+
+
+
+
+
+
 }

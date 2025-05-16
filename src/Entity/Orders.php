@@ -2,14 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\OrderRepository;
+use App\Repository\OrdersRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: OrderRepository::class)]
-#[ORM\Table(name: '`order`')]
-class Order
+#[ORM\Entity(repositoryClass: OrdersRepository::class)]
+class Orders
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -26,12 +25,12 @@ class Order
     private ?string $status = null;
 
     #[ORM\Column]
-    private ?\DateTime $createdAt = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     /**
      * @var Collection<int, OrderItem>
      */
-    #[ORM\ManyToMany(targetEntity: OrderItem::class, mappedBy: 'orders')]
+    #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'ParentOrder')]
     private Collection $orderItems;
 
     public function __construct()
@@ -80,12 +79,12 @@ class Order
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTime
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTime $createdAt): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
 
@@ -104,7 +103,7 @@ class Order
     {
         if (!$this->orderItems->contains($orderItem)) {
             $this->orderItems->add($orderItem);
-            $orderItem->addOrder($this);
+            $orderItem->setParentOrder($this);
         }
 
         return $this;
@@ -113,7 +112,10 @@ class Order
     public function removeOrderItem(OrderItem $orderItem): static
     {
         if ($this->orderItems->removeElement($orderItem)) {
-            $orderItem->removeOrder($this);
+            // set the owning side to null (unless already changed)
+            if ($orderItem->getParentOrder() === $this) {
+                $orderItem->setParentOrder(null);
+            }
         }
 
         return $this;

@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\OrderItemRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
@@ -16,87 +14,96 @@ class OrderItem
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'orderItems')]
-    private ?Product $product = null;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Orders $parentOrder = null;
 
-    /**
-     * @var Collection<int, Order>
-     */
-    #[ORM\ManyToMany(targetEntity: Order::class, inversedBy: 'orderItems')]
-    private Collection $orders;
+    #[ORM\ManyToOne(inversedBy: 'orderItems')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Product $product = null;
 
     #[ORM\Column]
     private ?int $quantity = null;
 
     #[ORM\Column]
-    private ?float $initPrice = null;
+    private ?float $unitPrice = null;
 
-    public function __construct()
-    {
-        $this->orders = new ArrayCollection();
-    }
-
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return Orders|null
+     */
+    public function getParentOrder(): ?Orders
+    {
+        return $this->parentOrder;
+    }
+
+    /**
+     * @param Orders|null $parentOrder
+     * @return $this
+     */
+    public function setParentOrder(?Orders $parentOrder): static
+    {
+        $this->parentOrder = $parentOrder;
+        return $this;
+    }
+
+    /**
+     * @return Product|null
+     */
     public function getProduct(): ?Product
     {
         return $this->product;
     }
 
+    /**
+     * @param Product|null $product
+     * @return $this
+     */
     public function setProduct(?Product $product): static
     {
         $this->product = $product;
-
         return $this;
     }
 
     /**
-     * @return Collection<int, Order>
+     * @return int|null
      */
-    public function getOrders(): Collection
-    {
-        return $this->orders;
-    }
-
-    public function addOrder(Order $order): static
-    {
-        if (!$this->orders->contains($order)) {
-            $this->orders->add($order);
-        }
-
-        return $this;
-    }
-
-    public function removeOrder(Order $order): static
-    {
-        $this->orders->removeElement($order);
-
-        return $this;
-    }
-
     public function getQuantity(): ?int
     {
         return $this->quantity;
     }
 
+    /**
+     * @param int $quantity
+     * @return $this
+     */
     public function setQuantity(int $quantity): static
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
-    public function getInitPrice(): ?float
+    /**
+     * @return float|null
+     */
+    public function getUnitPrice(): ?float
     {
-        return $this->initPrice;
+        return $this->unitPrice;
     }
 
-    public function setInitPrice(float $initPrice): static
+    /**
+     * @param float $unitPrice
+     * @return $this
+     */
+    public function setUnitPrice(float $unitPrice): static
     {
-        $this->initPrice = $initPrice;
-
+        $this->unitPrice = $unitPrice;
         return $this;
     }
 }
